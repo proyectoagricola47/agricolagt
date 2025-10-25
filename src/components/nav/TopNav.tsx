@@ -31,7 +31,7 @@ export default function TopNav({ onLogout }: Props) {
               <NavLink to="/posts" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Publicaciones</NavLink>
             </>
           )}
-          <NavLink to="/help" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Ayuda</NavLink>
+          
         </nav>
 
         {/* Right actions */}
