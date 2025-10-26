@@ -1,4 +1,5 @@
 import { useAuth } from '../../../context/AuthContext'
+import { Link } from 'react-router-dom'
 
 export default function LoginPage() {
   const { signInWithGoogle } = useAuth()
@@ -27,6 +28,11 @@ export default function LoginPage() {
             <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-primary-600 font-bold">G</span>
             <span>Iniciar sesión con Google</span>
           </button>
+          <div className="mt-4">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary-700 hover:text-primary-800 underline">
+              ← Regresar al inicio
+            </Link>
+          </div>
           
         </div>
       </div>

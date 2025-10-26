@@ -120,7 +120,6 @@ export default function PostCard({ images, image, title, excerpt, commentsCount 
             )}
           </div>
         )}
-        <h3 className={variant === 'large' ? 'text-lg md:text-xl font-semibold text-gray-900 leading-snug line-clamp-2' : 'font-semibold text-gray-900 leading-snug line-clamp-2'}>{title}</h3>
         <p className={variant === 'large' ? 'text-sm text-gray-600 line-clamp-4' : 'text-sm text-gray-600 line-clamp-3'}>{excerpt}</p>
 
         {/* Categorías de la publicación */}

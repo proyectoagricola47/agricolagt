@@ -2,10 +2,11 @@ import PostCard from '../components/posts/PostCard'
 import CurrentWeatherCard from '../../weathers/components/CurrentWeatherCard'
 import AlertsList from '../../weathers/components/AlertsList'
 import type { Alert } from '../../../model/weather'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { listPosts } from '../services/postService'
 import type { Post } from '../../../model/post'
 import { supabase } from '../../../api/supabaseClient'
+import { deriveInsights, getWeatherAtescatempa, getWeatherByCoords, type WeatherBundle } from '../../weathers/services/openWeatherService'
 
 
 import { useNavigate } from 'react-router-dom'
@@ -17,6 +18,11 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Clima (usa última ubicación guardada o Atescatempa)
+  const [bundle, setBundle] = useState<WeatherBundle | null>(null)
+  const [wLoading, setWLoading] = useState(false)
+  const alerts = useMemo<Alert[]>(() => (bundle ? (deriveInsights(bundle) as unknown as Alert[]) : []), [bundle])
 
   useEffect(() => {
     let alive = true
@@ -34,6 +40,34 @@ export default function FeedPage() {
       }
     }
     load(0)
+    return () => { alive = false }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        setWLoading(true)
+        const saved = typeof window !== 'undefined' ? localStorage.getItem('weather:lastLocation') : null
+        if (saved) {
+          try {
+            const p = JSON.parse(saved) as { lat: number; lon: number }
+            const b = await getWeatherByCoords(p.lat, p.lon)
+            if (alive) setBundle(b)
+          } catch {
+            const b = await getWeatherAtescatempa()
+            if (alive) setBundle(b)
+          }
+        } else {
+          const b = await getWeatherAtescatempa()
+          if (alive) setBundle(b)
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (alive) setWLoading(false)
+      }
+    })()
     return () => { alive = false }
   }, [])
 
@@ -91,23 +125,12 @@ export default function FeedPage() {
         <h1 className="text-2xl font-bold">Publicaciones Recientes</h1>
       </div>
 
-      {/* Controles de búsqueda en móvil */}
-      <div className="flex items-center gap-2 mb-4 lg:hidden">
-        <input
-          type="search"
-          placeholder="Buscar artículos, guías..."
-          className="h-10 flex-1 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        <button className="h-10 px-3 rounded-lg border border-gray-300 text-sm">Filtros</button>
-        <button className="h-10 px-3 rounded-lg border border-gray-300 text-sm">Ordenar</button>
-      </div>
-
       {/* Layout: contenido + barra derecha sticky */}
       <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-6">
         {/* Contenido principal */}
         <div>
           {/* Lista de posts (más recientes primero), 10 por página con infinito */}
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {posts.map((p) => (
               <PostCard
                 key={p.id}
@@ -142,27 +165,28 @@ export default function FeedPage() {
               <button className="h-10 px-3 rounded-lg border border-gray-300 text-sm">Ordenar</button>
             </div> */}
 
-            {/* Clima */}
-            <CurrentWeatherCard
-              tempC={27}
-              summary="Soleado con nubes dispersas"
-              details={[
-                { label: 'Humedad', value: '65%', icon: 'humidity' },
-                { label: 'Viento', value: '12 km/h', icon: 'wind' },
-                { label: 'Índice UV', value: 'Bajo', icon: 'uv' },
-              ]}
-              variant="compact"
-            />
+            {/* Clima (datos en vivo) */}
+            {bundle ? (
+              <CurrentWeatherCard
+                tempC={bundle.current.tempC}
+                summary={bundle.current.summary}
+                details={[
+                  { label: 'Humedad', value: `${bundle.current.humidity}%`, icon: 'humidity' },
+                  { label: 'Viento', value: `${bundle.current.windKmh} km/h`, icon: 'wind' },
+                  { label: 'Índice UV', value: bundle.current.uvi ? String(bundle.current.uvi) : '—', icon: 'uv' },
+                ]}
+                variant="compact"
+              />
+            ) : (
+              <section className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-500">
+                {wLoading ? 'Cargando clima…' : 'Clima no disponible'}
+              </section>
+            )}
 
             {/* Alertas */}
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Alertas rápidas</h3>
-              <AlertsList
-                alerts={[
-                  { title: 'Riesgo de lluvias intensas', description: 'Posibilidad de 25-50 mm en 24h. Prepara drenajes.', severity: 'medium', tags: ['Maíz'] },
-                  { title: 'Ventana ideal para fertilizar', description: 'Vientos suaves y humedad moderada para aplicar.', severity: 'low', tags: ['Café'] },
-                ] as Alert[]}
-              />
+              <AlertsList alerts={alerts} />
             </div>
           </div>
         </aside>

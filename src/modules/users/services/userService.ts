@@ -80,3 +80,33 @@ export async function uploadMyAvatar(file: File): Promise<string> {
   const { data } = supabase.storage.from('avatars').getPublicUrl(path)
   return data.publicUrl
 }
+
+// ADMIN: listar usuarios
+export async function adminListUsers(query?: string): Promise<UserProfile[]> {
+  let req = supabase
+    .from('users')
+    .select('id,email,name,avatar_url,role,location,created_at,updated_at')
+    .order('created_at', { ascending: false })
+
+  if (query && query.trim()) {
+    const q = query.trim()
+    // Buscar por nombre o email (si hay extensión ilike disponible)
+    req = req.or(`name.ilike.%${q}%,email.ilike.%${q}%`) as any
+  }
+
+  const { data, error } = await req
+  if (error) throw error
+  return (data ?? []).map(mapRowToProfile)
+}
+
+// ADMIN: cambiar rol de usuario
+export async function adminSetUserRole(userId: string, role: 'admin' | 'editor' | 'user'): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ role })
+    .eq('id', userId)
+    .select('id,email,name,avatar_url,role,location,created_at,updated_at')
+    .single()
+  if (error) throw error
+  return mapRowToProfile(data)
+}

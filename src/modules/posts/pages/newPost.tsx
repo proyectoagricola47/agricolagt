@@ -6,7 +6,8 @@ type ImageItem = {
   url: string
 }
 
-const CATEGORIES = ['Plagas', 'Fertilizantes', 'Maíz', 'Sequía', 'Cosecha', 'Suelos', 'Clima', 'Irrigación']
+// Tipos simplificados para los posts (más cortos, sin enfoque editorial)
+const POST_TYPES = ['Informativo', 'Comercial'] as const
 
 function classNames(...arr: Array<string | false | null | undefined>) {
   return arr.filter(Boolean).join(' ')
@@ -20,11 +21,10 @@ function getExcerpt(text: string, max = 180) {
 
 export default function NewPostPage() {
   const navigate = useNavigate()
-  const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [images, setImages] = useState<ImageItem[]>([])
   const [dragging, setDragging] = useState(false)
-  const [selectedCats, setSelectedCats] = useState<string[]>(['Maíz', 'Sequía'])
+  const [selectedCats, setSelectedCats] = useState<string[]>(['Informativo'])
   const [saving, setSaving] = useState(false)
 
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -35,8 +35,9 @@ export default function NewPostPage() {
   }, [images])
 
   const preview = useMemo(() => {
+    const autoTitle = getExcerpt(content || '', 70) || 'Nueva publicación'
     return {
-      title: title || 'Innovaciones en el Cultivo de Maíz para Zonas Áridas',
+      title: autoTitle,
       excerpt:
         getExcerpt(
           content ||
@@ -49,9 +50,9 @@ export default function NewPostPage() {
           encodeURIComponent(
             `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#e6f4ea"/><stop offset="1" stop-color="#c7ecd3"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#2a7a39" font-family="Arial" font-size="24">Vista previa</text></svg>`
           ),
-      badge: selectedCats[0] || 'Clima',
+      badge: selectedCats[0] || 'Informativo',
     }
-  }, [title, content, images, selectedCats])
+  }, [content, images, selectedCats])
 
   function onFilesSelected(files: FileList | null) {
     if (!files?.length) return
@@ -87,8 +88,8 @@ export default function NewPostPage() {
   }
 
   async function handlePublish() {
-    if (!title.trim() || !content.trim()) {
-      alert('Título y contenido son obligatorios')
+    if (!content.trim()) {
+      alert('El contenido es obligatorio')
       return
     }
     setSaving(true)
@@ -97,8 +98,10 @@ export default function NewPostPage() {
       // Subir imágenes seleccionadas (si hay)
       const urls = await uploadPostImages(images.map(i => i.file))
       const excerpt = getExcerpt(content)
+      // Título ahora se genera automáticamente desde el contenido para compatibilidad del backend
+      const autoTitle = getExcerpt(content, 70) || 'Publicación'
       const post = await createPost({
-        title,
+        title: autoTitle,
         content,
         excerpt,
         images: urls,
@@ -114,35 +117,19 @@ export default function NewPostPage() {
     }
   }
 
-  function handleDraft() {
-    console.log('Guardar borrador', { title, content, categories: selectedCats, images })
-    alert('Borrador guardado localmente (demo).')
-  }
 
   return (
     <div className="pb-16">
-      <h1 className="text-2xl md:text-3xl font-extrabold mb-6">Editar Publicación</h1>
+      <h1 className="text-2xl md:text-3xl font-extrabold mb-6">Nueva publicación</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda: formulario */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Título */}
+          {/* Categoria de publicación */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Título de la publicación</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Escribe un título conciso y descriptivo"
-              className="w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300"
-            />
-          </div>
-
-           {/* Categorías */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Categorías</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Categoria de publicación</label>
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => {
+              {POST_TYPES.map((c) => {
                 const active = selectedCats.includes(c)
                 return (
                   <button
@@ -170,7 +157,7 @@ export default function NewPostPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={8}
-              placeholder="Desarrolla el contenido de tu publicación aquí…"
+              placeholder="Escribe tu publicación (sin título, directo al contenido)…"
               className="w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300"
             />
           </div>
@@ -232,12 +219,7 @@ export default function NewPostPage() {
             >
               {saving ? 'Publicando…' : 'Publicar'}
             </button>
-            <button
-              onClick={handleDraft}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-            >
-              Guardar borrador
-            </button>
+
           </div>
         </div>
 
@@ -249,7 +231,6 @@ export default function NewPostPage() {
               <img src={preview.imageUrl} alt="previsualización" className="w-full h-full object-cover" />
             </div>
             <div className="p-4 space-y-2">
-              <h4 className="font-semibold text-gray-900 leading-snug">{preview.title}</h4>
               <p className="text-sm text-gray-600 line-clamp-4">{preview.excerpt}</p>
               <div className="text-xs text-gray-500 flex items-center gap-1 pt-1">
                 <span>📅</span>

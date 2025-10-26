@@ -167,7 +167,6 @@ export default function PostDetail() {
 
       {/* Title + meta */}
       <header className="mt-6">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">{post.title}</h1>
         <div className="mt-3 flex items-center flex-wrap gap-4 md:gap-6 text-sm text-gray-500">
           <span className="inline-flex items-center gap-2">
             <img src={post.author.avatarUrl || 'https://i.pravatar.cc/80?u='+post.author.id} alt={post.author.name || 'Autor'} className="w-8 h-8 rounded-full ring-2 ring-emerald-100 object-cover" />
