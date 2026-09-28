@@ -71,6 +71,8 @@ export default function TopNav({ onLogout }: Props) {
                 <NavLink to="/admin/users" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Admin</NavLink>
               )}
               <NavLink to="/crops" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Cultivos</NavLink>
+              <NavLink to="/plagas" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Plagas</NavLink>
+              <NavLink to="/mapa" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mapa</NavLink>
               <NavLink to="/posts" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Publicaciones</NavLink>
             </>
           )}

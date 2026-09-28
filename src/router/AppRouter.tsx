@@ -17,6 +17,10 @@ import AdminUsersPage from '../modules/users/pages/adminUsers'
 import RegisterPage from '../modules/auth/pages/register'
 import MarketPage from '../modules/market/pages/marketPage'
 import NotificationsPage from '../modules/notifications/pages/notificationsPage'
+import MyPestsPage from '../modules/pests/pages/myPests'
+import PestUpsertPage from '../modules/pests/pages/pestUpsert'
+import CropDetailPage from '../modules/crops/pages/cropDetail'
+import MapPage from '../modules/maps/pages/mapPage'
 
 export default function AppRouter() {
   function PublicLayout() {
@@ -70,6 +74,11 @@ export default function AppRouter() {
           <Route path="/crops" element={<MyCropsPage />} />
           <Route path="/crops/new" element={<CropUpsertPage />} />
           <Route path="/crops/:id/edit" element={<CropUpsertPage />} />
+          <Route path="/crops/:id" element={<CropDetailPage />} />
+          <Route path="/plagas" element={<MyPestsPage />} />
+          <Route path="/plagas/nueva" element={<PestUpsertPage />} />
+          <Route path="/plagas/:id/editar" element={<PestUpsertPage />} />
+          <Route path="/mapa" element={<MapPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

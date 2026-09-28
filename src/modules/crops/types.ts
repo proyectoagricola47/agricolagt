@@ -15,6 +15,8 @@ export interface Crop {
   sowingDate?: string // ISO date
   expectedHarvestDate?: string // ISO date
   location?: string
+  lat?: number
+  lng?: number
   notes?: string
   createdAt: string // ISO date
   updatedAt: string // ISO date

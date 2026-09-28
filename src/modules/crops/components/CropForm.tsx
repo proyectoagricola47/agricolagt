@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import LocationPicker from '../../../components/map/LocationPicker'
 import type { Crop, CropInput, AreaUnit, CropStatus } from '../../../model/crop'
 
 const statusOptions: CropStatus[] = ['Sembrado', 'En crecimiento', 'Cosechado', 'Pausado']
@@ -50,6 +51,9 @@ export default function CropForm({ initial, onSubmit, onCancel }: Props) {
   const [expectedHarvestDate, setExpectedHarvestDate] = useState(initial?.expectedHarvestDate || '')
   const [location, setLocation] = useState(initial?.location || '')
   const [notes, setNotes] = useState(initial?.notes || '')
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | undefined>(
+    initial?.lat != null && initial?.lng != null ? { lat: initial.lat, lng: initial.lng } : undefined,
+  )
 
   // Inicializar selects con valores personalizados si no están en las listas
   useEffect(() => {
@@ -102,6 +106,8 @@ export default function CropForm({ initial, onSubmit, onCancel }: Props) {
       sowingDate: sowingDate || undefined,
       expectedHarvestDate: expectedHarvestDate || undefined,
       location: location || undefined,
+      lat: coords?.lat,
+      lng: coords?.lng,
       notes: notes || undefined,
     }
     onSubmit(payload)
@@ -190,6 +196,13 @@ export default function CropForm({ initial, onSubmit, onCancel }: Props) {
         <div className="md:col-span-2">
           <label className="text-sm text-gray-600">Ubicación</label>
           <input value={location} onChange={(e) => setLocation(e.target.value)} className="mt-1 w-full h-10 rounded-lg border border-gray-300 px-3" placeholder="Finca/sector" />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-sm text-gray-600">Ubicación en el mapa</label>
+          <p className="text-xs text-gray-500 mb-2">
+            Señala dónde está el terreno para verlo en el mapa de cultivos y plagas.
+          </p>
+          <LocationPicker value={coords} onChange={setCoords} />
         </div>
         <div className="md:col-span-2">
           <label className="text-sm text-gray-600">Notas</label>

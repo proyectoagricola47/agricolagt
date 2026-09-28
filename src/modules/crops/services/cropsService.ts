@@ -15,6 +15,8 @@ function mapRowToCrop(row: any): Crop {
     sowingDate: row.sowing_date ? new Date(row.sowing_date).toISOString().slice(0, 10) : undefined,
     expectedHarvestDate: row.expected_harvest_date ? new Date(row.expected_harvest_date).toISOString().slice(0, 10) : undefined,
     location: row.location ?? undefined,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
     notes: row.notes ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -60,6 +62,8 @@ export const cropsService = {
       sowing_date: input.sowingDate ?? null,
       expected_harvest_date: input.expectedHarvestDate ?? null,
       location: input.location ?? null,
+      lat: input.lat ?? null,
+      lng: input.lng ?? null,
       notes: input.notes ?? null,
     }
     const { data, error } = await supabase
@@ -82,6 +86,8 @@ export const cropsService = {
     if (input.sowingDate !== undefined) patch.sowing_date = input.sowingDate || null
     if (input.expectedHarvestDate !== undefined) patch.expected_harvest_date = input.expectedHarvestDate || null
     if (input.location !== undefined) patch.location = input.location || null
+    if (input.lat !== undefined) patch.lat = input.lat ?? null
+    if (input.lng !== undefined) patch.lng = input.lng ?? null
     if (input.notes !== undefined) patch.notes = input.notes || null
 
     const { data, error } = await supabase

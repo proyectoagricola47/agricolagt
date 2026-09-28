@@ -76,6 +76,8 @@ export default function MobileTopbar({ onLogout }: Props) {
                   <NavLink to="/admin/users" className="block px-4 py-3 hover:bg-gray-50">Admin</NavLink>
                 )}
                 <NavLink to="/crops" className="block px-4 py-3 hover:bg-gray-50">Mis Cultivos</NavLink>
+                <NavLink to="/plagas" className="block px-4 py-3 hover:bg-gray-50">Plagas</NavLink>
+                <NavLink to="/mapa" className="block px-4 py-3 hover:bg-gray-50">Mapa</NavLink>
                 <NavLink to="/posts" className="block px-4 py-3 hover:bg-gray-50">Mis Publicaciones</NavLink>
                 {canWriteArticles && (
                   <NavLink to="/articles/new" className="block px-4 py-3 hover:bg-gray-50">Nuevo artículo</NavLink>

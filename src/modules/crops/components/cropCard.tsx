@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Crop } from '../../../model/crop'
 
 type Props = {
@@ -22,7 +23,9 @@ export default function CropCard({ crop, onEdit, onDelete }: Props) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              {crop.name}{crop.speciesName ? ` · ${crop.speciesName}` : ''}
+              <Link to={`/crops/${crop.id}`} className="hover:text-primary-700">
+                {crop.name}{crop.speciesName ? ` · ${crop.speciesName}` : ''}
+              </Link>
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">{crop.type}</p>
           </div>
@@ -49,6 +52,12 @@ export default function CropCard({ crop, onEdit, onDelete }: Props) {
         </div>
 
         <div className="mt-4 flex items-center justify-end gap-2">
+          <Link
+            to={`/crops/${crop.id}`}
+            className="px-3 py-2 rounded-lg border border-primary-500 text-primary-700 hover:bg-primary-50 text-sm"
+          >
+            Ver bitácora
+          </Link>
           {onEdit && (
             <button onClick={() => onEdit(crop.id)} className="px-3 py-2 rounded-lg border border-gray-300 text-sm">Editar</button>
           )}
