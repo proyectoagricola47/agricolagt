@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 
-export default function LoginPage() {
-  const { signInWithGoogle, signInWithEmail, resetPassword } = useAuth()
+export default function RegisterPage() {
+  const { signUpWithEmail, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
 
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmacion, setConfirmacion] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
@@ -16,39 +18,30 @@ export default function LoginPage() {
     e.preventDefault()
     setError(null)
     setAviso(null)
-    if (!email.trim() || !password) {
-      setError('Escribe tu correo y tu contraseña.')
-      return
-    }
+
+    if (!name.trim()) return setError('Escribe tu nombre completo.')
+    if (!email.trim()) return setError('Escribe tu correo electrónico.')
+    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
+    if (password !== confirmacion) return setError('Las contraseñas no coinciden.')
+
     setCargando(true)
     try {
-      await signInWithEmail(email, password)
-      navigate('/')
+      const { needsConfirmation } = await signUpWithEmail(email, password, name)
+      if (needsConfirmation) {
+        setAviso('Cuenta creada. Revisa tu correo y confirma tu cuenta para poder entrar.')
+      } else {
+        navigate('/profile')
+      }
     } catch (err: any) {
-      setError(err?.message ?? 'No se pudo iniciar sesión.')
+      setError(err?.message ?? 'No se pudo crear la cuenta.')
     } finally {
       setCargando(false)
     }
   }
 
-  async function handleRecuperar() {
-    setError(null)
-    setAviso(null)
-    if (!email.trim()) {
-      setError('Escribe tu correo para enviarte el enlace de recuperación.')
-      return
-    }
-    try {
-      await resetPassword(email)
-      setAviso('Te enviamos un correo para restablecer tu contraseña.')
-    } catch (err: any) {
-      setError(err?.message ?? 'No se pudo enviar el correo.')
-    }
-  }
-
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-screen flex items-center justify-center py-10"
       style={{
         backgroundImage: "url('/assets/hero.jpg')",
         backgroundSize: 'cover',
@@ -59,20 +52,27 @@ export default function LoginPage() {
     >
       <div className="max-w-md w-full mx-4">
         <div className="p-8 sm:p-10 rounded-2xl shadow-xl text-center border border-white/20 bg-white/70 backdrop-blur-lg">
-          <img
-            src="/assets/logo.png"
-            alt="Agrícola"
-            className="mx-auto mb-3 h-16"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-          />
-          <h1 className="text-4xl font-extrabold text-primary-700 mb-2">Agrícola</h1>
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Inicia sesión en tu cuenta</h2>
+          <h1 className="text-3xl font-extrabold text-primary-700 mb-2">Crear cuenta</h1>
+          <h2 className="text-sm text-gray-700 mb-6">Regístrate para llevar el control de tus cultivos</h2>
 
           <form onSubmit={handleSubmit} className="text-left space-y-4">
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium mb-1">Correo electrónico</label>
+              <label htmlFor="reg-name" className="block text-sm font-medium mb-1">Nombre completo</label>
               <input
-                id="login-email"
+                id="reg-name"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="reg-email" className="block text-sm font-medium mb-1">Correo electrónico</label>
+              <input
+                id="reg-email"
                 type="email"
                 autoComplete="email"
                 value={email}
@@ -83,15 +83,28 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium mb-1">Contraseña</label>
+              <label htmlFor="reg-password" className="block text-sm font-medium mb-1">Contraseña</label>
               <input
-                id="login-password"
+                id="reg-password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Tu contraseña"
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="reg-confirm" className="block text-sm font-medium mb-1">Repetir contraseña</label>
+              <input
+                id="reg-confirm"
+                type="password"
+                autoComplete="new-password"
+                value={confirmacion}
+                onChange={(e) => setConfirmacion(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Repite la contraseña"
               />
             </div>
 
@@ -107,16 +120,9 @@ export default function LoginPage() {
               disabled={cargando}
               className="w-full px-6 py-3 rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg transition-colors disabled:opacity-60"
             >
-              {cargando ? 'Entrando…' : 'Entrar'}
+              {cargando ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
           </form>
-
-          <button
-            onClick={handleRecuperar}
-            className="mt-3 text-sm text-primary-700 hover:text-primary-800 underline"
-          >
-            Olvidé mi contraseña
-          </button>
 
           <div className="flex items-center gap-3 my-5">
             <span className="h-px flex-1 bg-gray-300" />
@@ -133,17 +139,11 @@ export default function LoginPage() {
           </button>
 
           <p className="mt-6 text-sm text-gray-700">
-            ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-primary-700 hover:text-primary-800 font-medium underline">
-              Regístrate
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" className="text-primary-700 hover:text-primary-800 font-medium underline">
+              Inicia sesión
             </Link>
           </p>
-
-          <div className="mt-3">
-            <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 underline">
-              ← Regresar al inicio
-            </Link>
-          </div>
         </div>
       </div>
     </div>

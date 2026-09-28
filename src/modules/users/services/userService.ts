@@ -4,6 +4,7 @@ import type { UserProfile } from '../../../model/user'
 export type ProfileUpdateInput = {
   name?: string
   location?: string
+  phone?: string
   avatarUrl?: string
 }
 
@@ -14,6 +15,7 @@ function mapRowToProfile(row: any): UserProfile {
     name: row.name,
     avatarUrl: row.avatar_url ?? undefined,
     location: row.location ?? undefined,
+    phone: row.phone ?? undefined,
     role: row.role ?? 'user',
     createdAt: row.created_at ?? undefined,
     updatedAt: row.updated_at ?? undefined,
@@ -27,7 +29,7 @@ export async function getMyProfile(): Promise<UserProfile | null> {
 
   const { data, error } = await supabase
     .from('users')
-  .select('id,email,name,avatar_url,role,location,profile_complete,created_at,updated_at')
+  .select('id,email,name,avatar_url,role,location,phone,profile_complete,created_at,updated_at')
     .eq('id', uid)
     .maybeSingle()
   if (error) throw error
@@ -41,7 +43,7 @@ export async function updateMyProfile(input: ProfileUpdateInput): Promise<UserPr
 
   const { data: current, error: errCur } = await supabase
     .from('users')
-    .select('id, name, location, avatar_url, email, role, created_at, updated_at')
+    .select('id, name, location, phone, avatar_url, email, role, created_at, updated_at')
     .eq('id', uid)
     .single()
   if (errCur) throw errCur
@@ -49,6 +51,7 @@ export async function updateMyProfile(input: ProfileUpdateInput): Promise<UserPr
   const next = {
     name: input.name ?? current.name,
     location: input.location ?? current.location,
+    phone: input.phone ?? current.phone,
     avatar_url: input.avatarUrl ?? current.avatar_url,
   }
 
@@ -58,7 +61,7 @@ export async function updateMyProfile(input: ProfileUpdateInput): Promise<UserPr
     .from('users')
     .update({ ...next, profile_complete })
     .eq('id', uid)
-    .select('id,email,name,avatar_url,role,location,created_at,updated_at')
+    .select('id,email,name,avatar_url,role,location,phone,created_at,updated_at')
     .single()
   if (error) throw error
   return mapRowToProfile(data)
@@ -85,7 +88,7 @@ export async function uploadMyAvatar(file: File): Promise<string> {
 export async function adminListUsers(query?: string): Promise<UserProfile[]> {
   let req = supabase
     .from('users')
-    .select('id,email,name,avatar_url,role,location,created_at,updated_at')
+    .select('id,email,name,avatar_url,role,location,phone,created_at,updated_at')
     .order('created_at', { ascending: false })
 
   if (query && query.trim()) {
@@ -105,7 +108,7 @@ export async function adminSetUserRole(userId: string, role: 'admin' | 'editor' 
     .from('users')
     .update({ role })
     .eq('id', userId)
-    .select('id,email,name,avatar_url,role,location,created_at,updated_at')
+    .select('id,email,name,avatar_url,role,location,phone,created_at,updated_at')
     .single()
   if (error) throw error
   return mapRowToProfile(data)

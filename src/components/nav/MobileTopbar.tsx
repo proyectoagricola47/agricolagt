@@ -67,9 +67,11 @@ export default function MobileTopbar({ onLogout }: Props) {
             <NavLink to="/weather" className="block px-4 py-3 hover:bg-gray-50">Clima</NavLink>
             <NavLink to="/feed" className="block px-4 py-3 hover:bg-gray-50">Publicaciones</NavLink>
             <NavLink to="/articles" className="block px-4 py-3 hover:bg-gray-50">Artículos</NavLink>
+            <NavLink to="/mercado" className="block px-4 py-3 hover:bg-gray-50">Mercado</NavLink>
             {user ? (
               <>
                 <NavLink to="/profile" className="block px-4 py-3 hover:bg-gray-50">Mi Perfil</NavLink>
+                <NavLink to="/notificaciones" className="block px-4 py-3 hover:bg-gray-50">Notificaciones</NavLink>
                 {isAdmin && (
                   <NavLink to="/admin/users" className="block px-4 py-3 hover:bg-gray-50">Admin</NavLink>
                 )}

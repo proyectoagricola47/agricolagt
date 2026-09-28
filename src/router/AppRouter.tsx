@@ -14,6 +14,9 @@ import MyCropsPage from '../modules/crops/pages/myCrops'
 import CropUpsertPage from '../modules/crops/pages/cropUpsert'
 import { useAuth } from '../context/AuthContext'
 import AdminUsersPage from '../modules/users/pages/adminUsers'
+import RegisterPage from '../modules/auth/pages/register'
+import MarketPage from '../modules/market/pages/marketPage'
+import NotificationsPage from '../modules/notifications/pages/notificationsPage'
 
 export default function AppRouter() {
   function PublicLayout() {
@@ -43,6 +46,7 @@ export default function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         {/* Públicas: artículos como home, clima, feed de posts y detalle de post */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<ArticlesListPage />} />
@@ -51,11 +55,13 @@ export default function AppRouter() {
           <Route path="/posts/:id" element={<PostDetail />} />
           <Route path="/articles" element={<ArticlesListPage />} />
           <Route path="/articles/:id" element={<ArticleDetailPage />} />
+          <Route path="/mercado" element={<MarketPage />} />
         </Route>
 
         {/* Privadas: requieren sesión */}
         <Route element={<PrivateLayout />}>
           <Route path="/profile" element={<Profile />} />
+          <Route path="/notificaciones" element={<NotificationsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/posts" element={<MyPostsPage />} />
           <Route path="/posts/new" element={<NewPostPage />} />

@@ -9,6 +9,7 @@ export default function Profile() {
 
 	const [name, setName] = useState('Juan Pérez')
 	const [location, setLocation] = useState('Ciudad de México, México')
+	const [phone, setPhone] = useState('')
 	const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 	const [avatarFile, setAvatarFile] = useState<File | null>(null)
 	const [_interests, _setInterests] = useState<Record<string, boolean>>({
@@ -28,6 +29,7 @@ export default function Profile() {
 				if (p) {
 					setName(p.name || '')
 					setLocation(p.location || '')
+					setPhone(p.phone || '')
 					setAvatarPreview(p.avatarUrl || null)
 				}
 			})
@@ -40,7 +42,7 @@ export default function Profile() {
 			if (avatarFile) {
 				avatarUrl = await uploadMyAvatar(avatarFile)
 			}
-			await updateMyProfile({ name, location, avatarUrl })
+			await updateMyProfile({ name, location, phone, avatarUrl })
 			setAvatarFile(null)
 			alert('Perfil actualizado')
 		} catch (e) {
@@ -111,6 +113,24 @@ export default function Profile() {
 								placeholder="Ciudad, País"
 							/>
 						</div>
+					</div>
+
+					{/* Teléfono de contacto */}
+					<div>
+						<label className="block text-sm font-medium mb-2">Teléfono de contacto</label>
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">📞</span>
+							<input
+								value={phone}
+								onChange={(e) => setPhone(e.target.value)}
+								type="tel"
+								className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+								placeholder="5555-5555"
+							/>
+						</div>
+						<p className="mt-1 text-xs text-gray-500">
+							Se mostrará a los compradores interesados en tus publicaciones del mercado.
+						</p>
 					</div>
 
 					{/* Cultivos de Interés */}

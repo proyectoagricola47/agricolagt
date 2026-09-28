@@ -5,6 +5,7 @@ import AlertsList from '../components/AlertsList'
 import TodaySummaryCard from '../components/TodaySummaryCard'
 import WeatherMap from '../components/WeatherMap'
 import { deriveInsights, geocodeCity, getWeatherAtescatempa, getWeatherByCoords, type WeatherBundle } from '../services/openWeatherService'
+import { procesarAlertas } from '../../notifications/services/notificationService'
 
 const STORAGE_KEY = 'weather:lastLocation'
 
@@ -90,6 +91,12 @@ export default function WeatherPage() {
 		}
 
 	const alerts = useMemo(() => (bundle ? deriveInsights(bundle) : []), [bundle])
+
+	// Registra y notifica las alertas relevantes del clima consultado
+	useEffect(() => {
+		if (!alerts.length) return
+		procesarAlertas(alerts).catch(console.error)
+	}, [alerts])
 
 	return (
 		<div className="pb-16">
