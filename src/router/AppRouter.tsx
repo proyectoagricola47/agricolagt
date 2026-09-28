@@ -21,6 +21,9 @@ import MyPestsPage from '../modules/pests/pages/myPests'
 import PestUpsertPage from '../modules/pests/pages/pestUpsert'
 import CropDetailPage from '../modules/crops/pages/cropDetail'
 import MapPage from '../modules/maps/pages/mapPage'
+import MyIncidentsPage from '../modules/incidents/pages/myIncidents'
+import AdminIncidentsPage from '../modules/incidents/pages/adminIncidents'
+import ReportsPage from '../modules/reports/pages/reportsPage'
 
 export default function AppRouter() {
   function PublicLayout() {
@@ -79,6 +82,9 @@ export default function AppRouter() {
           <Route path="/plagas/nueva" element={<PestUpsertPage />} />
           <Route path="/plagas/:id/editar" element={<PestUpsertPage />} />
           <Route path="/mapa" element={<MapPage />} />
+          <Route path="/asistencia" element={<MyIncidentsPage />} />
+          <Route path="/asistencia/bandeja" element={<AdminIncidentsPage />} />
+          <Route path="/reportes" element={<ReportsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

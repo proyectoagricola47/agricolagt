@@ -73,6 +73,11 @@ export default function TopNav({ onLogout }: Props) {
               <NavLink to="/crops" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Cultivos</NavLink>
               <NavLink to="/plagas" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Plagas</NavLink>
               <NavLink to="/mapa" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mapa</NavLink>
+              <NavLink to="/reportes" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Reportes</NavLink>
+              <NavLink to="/asistencia" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Asistencia</NavLink>
+              {canWriteArticles && (
+                <NavLink to="/asistencia/bandeja" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Bandeja</NavLink>
+              )}
               <NavLink to="/posts" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Publicaciones</NavLink>
             </>
           )}

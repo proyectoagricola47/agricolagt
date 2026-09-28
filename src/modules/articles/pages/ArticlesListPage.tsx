@@ -3,6 +3,7 @@ import { listArticles } from '../services/articleService'
 import type { Article } from '../../../model'
 import { Link } from 'react-router-dom'
 import { getWeatherAtescatempa, type WeatherBundle, deriveInsights, type Insight } from '../../weathers/services/openWeatherService'
+import TipsPanel from '../../tips/components/TipsPanel'
 
 // Iconos livianos en SVG para el panel de clima/alertas
 const IconCloudSun = (props: React.SVGProps<SVGSVGElement>) => (
@@ -223,6 +224,9 @@ export default function ArticlesListPage() {
               <p className="text-sm text-gray-500">{wLoading ? 'Analizando…' : 'Sin alertas por ahora'}</p>
             )}
           </div>
+
+          {/* Consejos según el clima y los cultivos del agricultor */}
+          <TipsPanel alertas={insights} />
         </aside>
       </div>
 

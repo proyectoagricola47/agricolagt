@@ -2,11 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { cropsService } from '../services/cropsService'
 import { activityService } from '../services/activityService'
+import { harvestService } from '../services/harvestService'
 import { pestService } from '../../pests/services/pestService'
 import ActivityForm from '../components/ActivityForm'
 import ActivityTimeline from '../components/ActivityTimeline'
+import HarvestForm from '../components/HarvestForm'
+import HarvestList from '../components/HarvestList'
 import { AREA_UNIT_LABEL, type Crop } from '../../../model/crop'
 import type { CropActivity, CropActivityInput } from '../../../model/activity'
+import type { Harvest, HarvestInput } from '../../../model/harvest'
 import { SEVERITY_COLOR, SEVERITY_LABEL, type PestReport } from '../../../model/pest'
 
 function formatoFecha(iso?: string): string {
@@ -27,23 +31,27 @@ export default function CropDetailPage() {
   const [crop, setCrop] = useState<Crop | undefined>()
   const [labores, setLabores] = useState<CropActivity[]>([])
   const [plagas, setPlagas] = useState<PestReport[]>([])
+  const [cosechas, setCosechas] = useState<Harvest[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formAbierto, setFormAbierto] = useState(false)
+  const [formCosecha, setFormCosecha] = useState(false)
 
   const cargar = useCallback(async () => {
     if (!id) return
     setCargando(true)
     setError(null)
     try {
-      const [c, l, p] = await Promise.all([
+      const [c, l, p, h] = await Promise.all([
         cropsService.get(id),
         activityService.listByCrop(id),
         pestService.listByCrop(id),
+        harvestService.listByCrop(id),
       ])
       setCrop(c)
       setLabores(l)
       setPlagas(p)
+      setCosechas(h)
     } catch (e) {
       console.error(e)
       setError('No se pudo cargar la ficha del cultivo.')
@@ -71,6 +79,23 @@ export default function CropDetailPage() {
     }
   }
 
+  async function registrarCosecha(data: HarvestInput) {
+    const nueva = await harvestService.create(data)
+    setCosechas((prev) => [nueva, ...prev].sort((a, b) => b.harvestDate.localeCompare(a.harvestDate)))
+    setFormCosecha(false)
+  }
+
+  async function eliminarCosecha(idCosecha: string) {
+    if (!confirm('¿Eliminar esta cosecha del historial?')) return
+    try {
+      await harvestService.remove(idCosecha)
+      setCosechas((prev) => prev.filter((h) => h.id !== idCosecha))
+    } catch (e) {
+      console.error(e)
+      alert('No se pudo eliminar la cosecha.')
+    }
+  }
+
   /** Resumen de riego, que es lo que el documento pide vigilar. */
   const resumenRiego = useMemo(() => {
     const riegos = labores.filter((a) => a.activityType === 'riego')
@@ -81,6 +106,11 @@ export default function CropDetailPage() {
   const gastoTotal = useMemo(
     () => labores.reduce((suma, a) => suma + (a.cost ?? 0), 0),
     [labores],
+  )
+
+  const ingresoTotal = useMemo(
+    () => cosechas.reduce((suma, h) => suma + (h.income ?? 0), 0),
+    [cosechas],
   )
 
   if (cargando) return <p className="text-gray-500">Cargando…</p>
@@ -130,6 +160,14 @@ export default function CropDetailPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-3">
           <p className="text-xs text-gray-500">Gasto registrado</p>
           <p className="font-semibold text-gray-900">Q{gastoTotal.toFixed(2)}</p>
+          {ingresoTotal > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Ingreso Q{ingresoTotal.toFixed(2)} · Balance{' '}
+              <span className={ingresoTotal - gastoTotal >= 0 ? 'text-emerald-700' : 'text-red-700'}>
+                Q{(ingresoTotal - gastoTotal).toFixed(2)}
+              </span>
+            </p>
+          )}
         </div>
       </section>
 
@@ -163,6 +201,36 @@ export default function CropDetailPage() {
         )}
 
         <ActivityTimeline items={labores} onDelete={eliminarLabor} />
+      </section>
+
+      <section>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-xl font-bold">Cosechas y rendimiento</h2>
+            <p className="text-sm text-gray-600">
+              Lo que realmente se obtuvo en cada temporada, para poder comparar entre años.
+            </p>
+          </div>
+          <button
+            onClick={() => setFormCosecha((v) => !v)}
+            className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 text-sm whitespace-nowrap"
+          >
+            {formCosecha ? 'Cerrar' : 'Registrar cosecha'}
+          </button>
+        </div>
+
+        {formCosecha && (
+          <div className="rounded-xl border border-gray-200 p-4 mb-5">
+            <HarvestForm cropId={crop.id} onSaved={registrarCosecha} onCancel={() => setFormCosecha(false)} />
+          </div>
+        )}
+
+        <HarvestList
+          items={cosechas}
+          area={crop.area}
+          areaUnit={crop.areaUnit}
+          onDelete={eliminarCosecha}
+        />
       </section>
 
       <section>
