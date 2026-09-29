@@ -64,16 +64,39 @@ export async function pedirPermisoUnaVez(): Promise<NotificationPermission | 'no
   }
 }
 
-/** Muestra la notificación del navegador, si hay permiso. */
-function mostrarEnNavegador(titulo: string, cuerpo: string) {
+/**
+ * Muestra la notificación del sistema, si hay permiso.
+ *
+ * Se intenta primero con el trabajador de servicio porque Chrome para Android
+ * no admite el constructor Notification: al invocarlo lanza un error y el aviso
+ * nunca aparece. En el escritorio ambas vías funcionan, de modo que el
+ * constructor queda como alternativa para los navegadores que no tengan un
+ * trabajador de servicio activo.
+ */
+async function mostrarEnNavegador(titulo: string, cuerpo: string): Promise<void> {
   if (!soportaNotificaciones() || Notification.permission !== 'granted') return
+
+  const opciones: NotificationOptions = {
+    body: cuerpo,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: titulo,
+  }
+
   try {
-    new Notification(titulo, {
-      body: cuerpo,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      tag: titulo,
-    })
+    if ('serviceWorker' in navigator) {
+      const registro = await navigator.serviceWorker.getRegistration()
+      if (registro) {
+        await registro.showNotification(titulo, opciones)
+        return
+      }
+    }
+  } catch (e) {
+    console.error('No se pudo mostrar la notificación desde el trabajador de servicio', e)
+  }
+
+  try {
+    new Notification(titulo, opciones)
   } catch (e) {
     console.error('No se pudo mostrar la notificación', e)
   }
@@ -140,7 +163,7 @@ export async function procesarAlertas(alertas: AlertaEntrante[]): Promise<void> 
     try {
       await guardarEnHistorial(uid, alerta)
       if (alerta.severity === 'high') {
-        mostrarEnNavegador(alerta.title, alerta.description)
+        await mostrarEnNavegador(alerta.title, alerta.description)
       }
     } catch (e) {
       console.error('No se pudo registrar la alerta', e)
@@ -242,6 +265,6 @@ export async function enviarPruebaDeNotificacion(): Promise<string> {
   })
   if (error) throw error
 
-  mostrarEnNavegador(titulo, cuerpo)
+  await mostrarEnNavegador(titulo, cuerpo)
   return cuerpo
 }
