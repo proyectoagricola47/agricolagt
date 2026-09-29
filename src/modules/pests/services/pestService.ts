@@ -76,6 +76,16 @@ export const pestService = {
     return (data ?? []).map(mapRow)
   },
 
+  /** Todos los reportes de plaga de la comunidad, para el mapa y los reportes. */
+  async listAll(): Promise<PestReport[]> {
+    const { data, error } = await supabase
+      .from('pest_reports')
+      .select(SELECT)
+      .order('detected_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map(mapRow)
+  },
+
   async get(id: string): Promise<PestReport | undefined> {
     const { data, error } = await supabase
       .from('pest_reports')

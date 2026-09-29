@@ -24,14 +24,23 @@ function aBase64(buffer: ArrayBuffer | null): string {
   return btoa(texto)
 }
 
-/** ¿El dispositivo admite notificaciones enviadas desde el servidor? */
-export function soportaPush(): boolean {
+/** ¿El navegador admite notificaciones enviadas desde el servidor? */
+export function navegadorSoportaPush(): boolean {
   return (
     typeof window !== 'undefined' &&
     'serviceWorker' in navigator &&
-    'PushManager' in window &&
-    Boolean(LLAVE_PUBLICA)
+    'PushManager' in window
   )
+}
+
+/** ¿Está configurada la llave pública que autoriza el envío? */
+export function hayLlaveConfigurada(): boolean {
+  return Boolean(LLAVE_PUBLICA)
+}
+
+/** ¿Se puede usar la función completa? */
+export function soportaPush(): boolean {
+  return navegadorSoportaPush() && hayLlaveConfigurada()
 }
 
 async function suscripcionActual(): Promise<PushSubscription | null> {

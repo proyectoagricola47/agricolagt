@@ -38,6 +38,16 @@ export const harvestService = {
     return (data ?? []).map(mapRow)
   },
 
+  /** Todas las cosechas de la comunidad, para los reportes municipales. */
+  async listAll(): Promise<Harvest[]> {
+    const { data, error } = await supabase
+      .from('harvests')
+      .select(SELECT)
+      .order('harvest_date', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map(mapRow)
+  },
+
   /** Todas las cosechas del agricultor, para los reportes. */
   async listMine(): Promise<Harvest[]> {
     const { data: auth } = await supabase.auth.getUser()

@@ -36,6 +36,19 @@ export const cropsService = {
     if (error) throw error
     return (data ?? []).map(mapRowToCrop)
   },
+  /**
+   * Todos los cultivos ubicados de la comunidad, no solo los propios.
+   * Alimenta el mapa y los reportes municipales. La seguridad por fila
+   * permite la lectura, pero la escritura sigue restringida al dueño.
+   */
+  async listAll(): Promise<Crop[]> {
+    const { data, error } = await supabase
+      .from('crops')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map(mapRowToCrop)
+  },
   async get(id: string): Promise<Crop | undefined> {
     const { data, error } = await supabase
       .from('crops')

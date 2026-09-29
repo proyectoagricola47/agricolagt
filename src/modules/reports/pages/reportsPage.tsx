@@ -54,7 +54,7 @@ export default function ReportsPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold">Reportes y estadísticas</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Resumen de lo que has registrado: rendimiento por temporada, incidencia de
+          Resumen de lo registrado por la comunidad: rendimiento por temporada, incidencia de
           plagas y labores realizadas.
         </p>
       </div>
@@ -130,7 +130,7 @@ export default function ReportsPage() {
       <section>
         <h2 className="text-xl font-bold mb-1">Labores realizadas</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Trabajo registrado en la bitácora de tus cultivos.
+          Trabajo registrado en las bitácoras de los cultivos de la comunidad.
         </p>
 
         {reporte.laboresPorTipo.length === 0 ? (

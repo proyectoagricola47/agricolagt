@@ -62,12 +62,17 @@ export type DatosCrudos = {
   labores: CropActivity[]
 }
 
+/**
+ * Carga los datos de toda la comunidad, no solo los del agricultor que
+ * consulta. Los reportes son municipales: sirven para ver qué plagas
+ * están golpeando la zona y cómo viene la temporada en conjunto.
+ */
 export async function cargarDatos(): Promise<DatosCrudos> {
   const [cultivos, cosechas, plagas, labores] = await Promise.all([
-    cropsService.list(),
-    harvestService.listMine(),
-    pestService.list(),
-    activityService.listRecent(500),
+    cropsService.listAll(),
+    harvestService.listAll(),
+    pestService.listAll(),
+    activityService.listAllRecent(2000),
   ])
   return { cultivos, cosechas, plagas, labores }
 }

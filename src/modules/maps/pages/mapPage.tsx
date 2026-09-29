@@ -37,7 +37,7 @@ export default function MapPage() {
     let vivo = true
     ;(async () => {
       try {
-        const [c, p] = await Promise.all([cropsService.list(), pestService.list()])
+        const [c, p] = await Promise.all([cropsService.listAll(), pestService.listAll()])
         if (!vivo) return
         setCrops(c)
         setPlagas(p)
@@ -90,7 +90,7 @@ export default function MapPage() {
       <div className="mb-4">
         <h1 className="text-2xl md:text-3xl font-extrabold">Mapa de cultivos y plagas</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Muestra la distribución de tus cultivos y los focos de plaga que has reportado.
+          Muestra la distribución de los cultivos y los focos de plaga registrados en la comunidad.
           El color del punto de plaga corresponde a su severidad.
         </p>
       </div>

@@ -33,6 +33,17 @@ export const activityService = {
     return (data ?? []).map(mapRow)
   },
 
+  /** Labores de toda la comunidad, para los reportes municipales. */
+  async listAllRecent(limite = 2000): Promise<CropActivity[]> {
+    const { data, error } = await supabase
+      .from('crop_activities')
+      .select(SELECT)
+      .order('performed_at', { ascending: false })
+      .limit(limite)
+    if (error) throw error
+    return (data ?? []).map(mapRow)
+  },
+
   /** Últimas labores del agricultor, sin importar el cultivo. */
   async listRecent(limite = 20): Promise<CropActivity[]> {
     const { data: auth } = await supabase.auth.getUser()
