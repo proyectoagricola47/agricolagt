@@ -1,5 +1,6 @@
 import { supabase } from '../../../api/supabaseClient'
 import type { AppNotification, NotificationSeverity } from '../../../model/notification'
+import { getWeatherAtescatempa } from '../../weathers/services/openWeatherService'
 
 /** Alerta agrícola tal como la produce el servicio de clima. */
 export type AlertaEntrante = {
@@ -79,13 +80,26 @@ function mostrarEnNavegador(titulo: string, cuerpo: string) {
 }
 
 /**
+ * Fecha del día en la zona horaria del dispositivo, con formato AAAA-MM-DD.
+ *
+ * No se usa toISOString() porque devuelve la fecha en horario universal, seis
+ * horas adelante de Guatemala. Con ese cálculo, a partir de las seis de la
+ * tarde el día ya había cambiado y la misma alerta se registraba dos veces.
+ */
+function fechaLocal(fecha: Date = new Date()): string {
+  const anio = fecha.getFullYear()
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dia = String(fecha.getDate()).padStart(2, '0')
+  return `${anio}-${mes}-${dia}`
+}
+
+/**
  * Clave que evita repetir la misma alerta al mismo usuario el mismo día.
  * Se calcula aquí, y no en la base, porque un índice de PostgreSQL no admite
  * expresiones que dependan de la zona horaria.
  */
 function claveDelDia(titulo: string): string {
-  const hoy = new Date().toISOString().slice(0, 10)
-  return `${titulo}|${hoy}`
+  return `${titulo}|${fechaLocal()}`
 }
 
 /** Guarda la notificación en el historial del usuario. */
@@ -179,4 +193,55 @@ export async function marcarTodasComoLeidas(): Promise<void> {
     .eq('user_id', uid)
     .eq('read', false)
   if (error) throw error
+}
+
+/**
+ * Pide el permiso a raíz de un toque del usuario.
+ *
+ * Los navegadores móviles rechazan las solicitudes de permiso que no nacen de
+ * una acción directa de la persona, por lo que esta función debe invocarse
+ * siempre desde el controlador de un botón y nunca al cargar una pantalla.
+ */
+export async function pedirPermisoDesdeBoton(): Promise<NotificationPermission | 'no-soportado'> {
+  if (!soportaNotificaciones()) return 'no-soportado'
+  try {
+    return await Notification.requestPermission()
+  } catch {
+    return Notification.permission
+  }
+}
+
+/**
+ * Envía una notificación de verificación con el estado actual del clima del
+ * municipio. Sirve para comprobar que el permiso está concedido y que el
+ * historial registra correctamente, sin depender de que exista una condición
+ * climática adversa.
+ *
+ * No lleva clave de repetición, de modo que puede repetirse cuantas veces se
+ * necesite durante una demostración.
+ */
+export async function enviarPruebaDeNotificacion(): Promise<string> {
+  const { data: auth } = await supabase.auth.getUser()
+  const uid = auth.user?.id
+  if (!uid) throw new Error('Debes iniciar sesión para enviar la prueba.')
+
+  const bundle = await getWeatherAtescatempa()
+  const hora = new Date().toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
+  const titulo = 'Verificación del sistema de notificaciones'
+  const cuerpo =
+    `Atescatempa: ${bundle.current.summary}, ${Math.round(bundle.current.tempC)} °C, ` +
+    `humedad ${bundle.current.humidity} %. Enviada a las ${hora}.`
+
+  const { error } = await supabase.from('notifications').insert({
+    user_id: uid,
+    title: titulo,
+    body: cuerpo,
+    type: 'prueba',
+    severity: 'low',
+    dedup_key: null,
+  })
+  if (error) throw error
+
+  mostrarEnNavegador(titulo, cuerpo)
+  return cuerpo
 }

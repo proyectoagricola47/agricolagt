@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { getMyProfile } from '../../modules/users/services/userService'
+import { contarNoLeidas } from '../../modules/notifications/services/notificationService'
 
 type Props = {
   onLogout?: () => void
@@ -34,6 +35,21 @@ export default function MobileTopbar({ onLogout }: Props) {
     return () => { alive = false }
   }, [user?.id])
 
+  // Contador de notificaciones sin leer, igual que en la barra de escritorio
+  const [noLeidas, setNoLeidas] = useState(0)
+  useEffect(() => {
+    let alive = true
+    if (!user) { setNoLeidas(0); return }
+    const refrescar = () => {
+      contarNoLeidas()
+        .then((n) => { if (alive) setNoLeidas(n) })
+        .catch(() => { if (alive) setNoLeidas(0) })
+    }
+    refrescar()
+    const t = setInterval(refrescar, 60000)
+    return () => { alive = false; clearInterval(t) }
+  }, [user?.id])
+
   const isAdmin = role === 'admin'
   const canWriteArticles = role === 'admin' || role === 'editor'
 
@@ -49,7 +65,22 @@ export default function MobileTopbar({ onLogout }: Props) {
           Agrícola
         </Link>
         {user ? (
-          <Link to="/profile" className="w-9 h-9 rounded-full bg-white shadow border grid place-items-center">🙂</Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/notificaciones"
+              title="Notificaciones"
+              className="relative w-9 h-9 rounded-full bg-white shadow border grid place-items-center"
+            >
+              <span aria-hidden className="text-lg leading-none">🔔</span>
+              <span className="sr-only">Notificaciones</span>
+              {noLeidas > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[11px] leading-[18px] text-center font-semibold">
+                  {noLeidas > 9 ? '9+' : noLeidas}
+                </span>
+              )}
+            </Link>
+            <Link to="/profile" className="w-9 h-9 rounded-full bg-white shadow border grid place-items-center">🙂</Link>
+          </div>
         ) : (
           <button onClick={() => navigate('/login')} className="px-2 py-1 rounded-lg border text-sm">Entrar</button>
         )}

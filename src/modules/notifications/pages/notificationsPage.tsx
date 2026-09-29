@@ -5,7 +5,8 @@ import {
   marcarComoLeida,
   marcarTodasComoLeidas,
   estadoDelPermiso,
-  pedirPermisoUnaVez,
+  pedirPermisoDesdeBoton,
+  enviarPruebaDeNotificacion,
 } from '../services/notificationService'
 
 function formatoFecha(iso: string): string {
@@ -52,9 +53,40 @@ export default function NotificationsPage() {
   useEffect(() => { cargar() }, [])
 
   async function activarPermiso() {
-    const r = await pedirPermisoUnaVez()
+    const r = await pedirPermisoDesdeBoton()
     setPermiso(r)
   }
+
+  // --- Verificación del módulo ---
+  const [enviando, setEnviando] = useState(false)
+  const [avisoPrueba, setAvisoPrueba] = useState<string | null>(null)
+  const [repetir, setRepetir] = useState(false)
+
+  async function enviarPrueba() {
+    setEnviando(true)
+    setAvisoPrueba(null)
+    try {
+      // El permiso se solicita aquí porque este código nace de un toque del
+      // usuario, que es lo que exigen los navegadores móviles.
+      const r = await pedirPermisoDesdeBoton()
+      setPermiso(r)
+      const cuerpo = await enviarPruebaDeNotificacion()
+      setAvisoPrueba(cuerpo)
+      await cargar()
+    } catch (e: any) {
+      console.error(e)
+      setAvisoPrueba(e?.message ?? 'No se pudo enviar la notificación de prueba.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  // Repetición cada cinco minutos, solo mientras esta pantalla esté abierta.
+  useEffect(() => {
+    if (!repetir) return
+    const t = setInterval(() => { enviarPrueba() }, 5 * 60 * 1000)
+    return () => clearInterval(t)
+  }, [repetir])
 
   async function leerTodas() {
     await marcarTodasComoLeidas().catch(console.error)
@@ -101,6 +133,44 @@ export default function NotificationsPage() {
           </button>
         </div>
       )}
+
+      {/* Verificación del módulo de notificaciones */}
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4">
+        <h2 className="font-semibold text-gray-900">Verificar el funcionamiento</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          Envía una notificación con el estado actual del clima de Atescatempa. Sirve para
+          comprobar que el permiso está concedido y que el historial registra correctamente,
+          sin esperar a que se presente una condición climática adversa.
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            onClick={enviarPrueba}
+            disabled={enviando}
+            className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 text-sm disabled:opacity-60"
+          >
+            {enviando ? 'Enviando…' : 'Enviar notificación de prueba'}
+          </button>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={repetir} onChange={(e) => setRepetir(e.target.checked)} />
+            Repetir cada 5 minutos
+          </label>
+        </div>
+
+        {repetir && (
+          <p className="mt-2 text-xs text-amber-700">
+            La repetición funciona únicamente mientras esta pantalla permanezca abierta.
+            Desactívala al terminar la demostración.
+          </p>
+        )}
+
+        {avisoPrueba && (
+          <p className="mt-3 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            {avisoPrueba}
+          </p>
+        )}
+      </div>
 
       {permiso === 'denied' && (
         <div className="mb-6 rounded-xl border border-gray-300 bg-gray-50 p-4 text-sm text-gray-700">
