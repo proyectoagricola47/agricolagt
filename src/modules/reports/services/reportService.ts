@@ -3,6 +3,7 @@ import { harvestService } from '../../crops/services/harvestService'
 import { activityService } from '../../crops/services/activityService'
 import { pestService } from '../../pests/services/pestService'
 import type { Crop } from '../../../model/crop'
+import type { AreaUnit } from '../../crops/types'
 import type { Harvest } from '../../../model/harvest'
 import type { CropActivity, ActivityType } from '../../../model/activity'
 import type { PestReport, PestSeverity } from '../../../model/pest'
@@ -39,9 +40,15 @@ export type LaborPorMes = {
   total: number
 }
 
+/** Superficie sembrada, separada por unidad: no se pueden sumar manzanas con metros. */
+export type AreaPorUnidad = {
+  unidad: AreaUnit
+  total: number
+}
+
 export type Reporte = {
   cultivos: number
-  areaTotal: number
+  areasPorUnidad: AreaPorUnidad[]
   rendimiento: RendimientoTemporada[]
   plagasPorTipo: PlagaPorTipo[]
   plagasPorSeveridad: Record<PestSeverity, number>
@@ -143,9 +150,20 @@ export function construirReporte(datos: DatosCrudos, filtros: Filtros = {}): Rep
     .sort((a, b) => a.mes.localeCompare(b.mes))
     .slice(-12)
 
+  // Superficie por unidad. Sumar manzanas con metros cuadrados daría un
+  // número sin significado, así que cada unidad se totaliza por separado.
+  const mapaArea = new Map<AreaUnit, number>()
+  for (const c of cultivosFiltrados) {
+    const unidad = (c.areaUnit ?? 'mz') as AreaUnit
+    mapaArea.set(unidad, (mapaArea.get(unidad) ?? 0) + (c.area ?? 0))
+  }
+  const areasPorUnidad: AreaPorUnidad[] = Array.from(mapaArea.entries())
+    .map(([unidad, total]) => ({ unidad, total }))
+    .sort((a, b) => b.total - a.total)
+
   return {
     cultivos: cultivosFiltrados.length,
-    areaTotal: cultivosFiltrados.reduce((s, c) => s + (c.area ?? 0), 0),
+    areasPorUnidad,
     rendimiento,
     plagasPorTipo,
     plagasPorSeveridad: porSeveridad,

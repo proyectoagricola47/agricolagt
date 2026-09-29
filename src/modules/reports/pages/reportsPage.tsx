@@ -8,6 +8,7 @@ import {
   type Filtros,
 } from '../services/reportService'
 import { ACTIVITY_ICON, ACTIVITY_LABEL } from '../../../model/activity'
+import { AREA_UNIT_LABEL } from '../../crops/types'
 
 function nombreDeMes(mes: string): string {
   const [anio, m] = mes.split('-')
@@ -92,7 +93,13 @@ export default function ReportsPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-3">
           <p className="text-xs text-gray-500">Cultivos</p>
           <p className="text-2xl font-bold text-gray-900">{reporte.cultivos}</p>
-          <p className="text-xs text-gray-500">{reporte.areaTotal.toFixed(2)} de área</p>
+          <p className="text-xs text-gray-500">
+            {reporte.areasPorUnidad.length === 0
+              ? 'sin área registrada'
+              : reporte.areasPorUnidad
+                  .map((a) => `${a.total.toFixed(2)} ${AREA_UNIT_LABEL[a.unidad]}`)
+                  .join(' · ')}
+          </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-3">
           <p className="text-xs text-gray-500">Focos de plaga activos</p>

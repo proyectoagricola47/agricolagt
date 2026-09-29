@@ -59,3 +59,32 @@ desde la interfaz, ya que solo se navega desde la lista propia.
 
 1. Ejecutar `supabase/migracion_comunitario.sql` en el editor de SQL.
 2. Subir los archivos a GitHub y esperar el despliegue.
+
+---
+
+# Corrección: superficie sembrada por unidad
+
+## El problema
+
+La pantalla de reportes mostraba la superficie total así:
+
+```ts
+areaTotal: cultivosFiltrados.reduce((s, c) => s + (c.area ?? 0), 0)
+```
+
+La suma ignoraba `area_unit`. Con los datos de ejemplo mostraba
+«832.50 de área», que son 32.50 manzanas sumadas con 800 metros
+cuadrados como si fueran la misma magnitud. Además se mostraba sin
+unidad, de modo que el número no significaba nada.
+
+El defecto es anterior a esta versión. No se había notado porque la
+pantalla nunca había tenido datos suficientes para evidenciarlo.
+
+## La corrección
+
+Se aplica el mismo criterio que ya usaba el rendimiento por temporada:
+agrupar por unidad en lugar de sumar magnitudes distintas.
+
+`Reporte.areaTotal` se sustituye por `Reporte.areasPorUnidad`, un
+arreglo con el total de cada unidad. La tarjeta de cultivos pasa a
+mostrar, por ejemplo, «32.50 mz · 800.00 m²».
