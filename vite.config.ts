@@ -26,6 +26,11 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Código propio que se añade al trabajador de servicio generado.
+        // Contiene la recepción de las notificaciones enviadas desde el
+        // proceso programado, que es lo que permite que lleguen con la
+        // aplicación cerrada.
+        importScripts: ['push-sw.js'],
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
