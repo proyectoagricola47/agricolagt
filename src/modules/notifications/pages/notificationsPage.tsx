@@ -8,6 +8,14 @@ import {
   pedirPermisoDesdeBoton,
   enviarPruebaDeNotificacion,
 } from '../services/notificationService'
+import {
+  soportaPush,
+  estaSuscrito,
+  suscribirDispositivo,
+  desuscribirDispositivo,
+  modoDemoActivo,
+  cambiarModoDemo,
+} from '../services/pushService'
 
 function formatoFecha(iso: string): string {
   try {
@@ -81,12 +89,52 @@ export default function NotificationsPage() {
     }
   }
 
-  // Repetición cada cinco minutos, solo mientras esta pantalla esté abierta.
+  // --- Avisos con la aplicación cerrada ---
+  const [suscrito, setSuscrito] = useState(false)
+  const [ocupadoPush, setOcupadoPush] = useState(false)
+  const [errorPush, setErrorPush] = useState<string | null>(null)
+
   useEffect(() => {
-    if (!repetir) return
-    const t = setInterval(() => { enviarPrueba() }, 5 * 60 * 1000)
-    return () => clearInterval(t)
-  }, [repetir])
+    if (!soportaPush()) return
+    estaSuscrito().then(setSuscrito).catch(() => setSuscrito(false))
+    modoDemoActivo().then(setRepetir).catch(() => setRepetir(false))
+  }, [])
+
+  async function alternarSuscripcion() {
+    setOcupadoPush(true)
+    setErrorPush(null)
+    try {
+      if (suscrito) {
+        await desuscribirDispositivo()
+        setSuscrito(false)
+        setRepetir(false)
+      } else {
+        await suscribirDispositivo()
+        setSuscrito(true)
+        setPermiso(estadoDelPermiso())
+      }
+    } catch (e: any) {
+      console.error(e)
+      setErrorPush(e?.message ?? 'No se pudo registrar el dispositivo.')
+    } finally {
+      setOcupadoPush(false)
+    }
+  }
+
+  async function alternarDemo(activo: boolean) {
+    setOcupadoPush(true)
+    setErrorPush(null)
+    try {
+      await cambiarModoDemo(activo)
+      setRepetir(activo)
+      if (activo) setSuscrito(true)
+    } catch (e: any) {
+      console.error(e)
+      setErrorPush(e?.message ?? 'No se pudo cambiar el modo de demostración.')
+    } finally {
+      setOcupadoPush(false)
+    }
+  }
 
   async function leerTodas() {
     await marcarTodasComoLeidas().catch(console.error)
@@ -152,16 +200,62 @@ export default function NotificationsPage() {
             {enviando ? 'Enviando…' : 'Enviar notificación de prueba'}
           </button>
 
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input type="checkbox" checked={repetir} onChange={(e) => setRepetir(e.target.checked)} />
-            Repetir cada 5 minutos
-          </label>
         </div>
 
-        {repetir && (
-          <p className="mt-2 text-xs text-amber-700">
-            La repetición funciona únicamente mientras esta pantalla permanezca abierta.
-            Desactívala al terminar la demostración.
+        {soportaPush() ? (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm font-medium text-gray-900">Avisos con la aplicación cerrada</p>
+            <p className="mt-1 text-sm text-gray-600">
+              Registra este dispositivo para recibir las alertas aunque la aplicación y el
+              navegador estén cerrados.
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                onClick={alternarSuscripcion}
+                disabled={ocupadoPush}
+                className={`px-4 py-2 rounded-lg text-sm disabled:opacity-60 ${
+                  suscrito
+                    ? 'border border-gray-300 hover:bg-gray-50'
+                    : 'bg-primary-600 text-white hover:bg-primary-700'
+                }`}
+              >
+                {suscrito ? 'Quitar este dispositivo' : 'Registrar este dispositivo'}
+              </button>
+
+              {suscrito && (
+                <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Dispositivo registrado
+                </span>
+              )}
+            </div>
+
+            <label className="mt-3 flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={repetir}
+                disabled={ocupadoPush}
+                onChange={(e) => alternarDemo(e.target.checked)}
+              />
+              Enviar una verificación cada 5 minutos
+            </label>
+
+            {repetir && (
+              <p className="mt-2 text-xs text-amber-700">
+                Activo. Seguirá llegando aunque cierres la aplicación, hasta que desmarques
+                esta casilla.
+              </p>
+            )}
+
+            {errorPush && (
+              <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {errorPush}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-gray-500">
+            Este navegador no admite avisos con la aplicación cerrada.
           </p>
         )}
 
