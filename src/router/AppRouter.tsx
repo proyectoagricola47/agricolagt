@@ -24,6 +24,8 @@ import MapPage from '../modules/maps/pages/mapPage'
 import MyIncidentsPage from '../modules/incidents/pages/myIncidents'
 import AdminIncidentsPage from '../modules/incidents/pages/adminIncidents'
 import ReportsPage from '../modules/reports/pages/reportsPage'
+import MyWaterPage from '../modules/water/pages/myWater'
+import WaterUpsertPage from '../modules/water/pages/waterUpsert'
 
 export default function AppRouter() {
   function PublicLayout() {
@@ -81,6 +83,9 @@ export default function AppRouter() {
           <Route path="/plagas" element={<MyPestsPage />} />
           <Route path="/plagas/nueva" element={<PestUpsertPage />} />
           <Route path="/plagas/:id/editar" element={<PestUpsertPage />} />
+          <Route path="/agua" element={<MyWaterPage />} />
+          <Route path="/agua/nueva" element={<WaterUpsertPage />} />
+          <Route path="/agua/:id/editar" element={<WaterUpsertPage />} />
           <Route path="/mapa" element={<MapPage />} />
           <Route path="/asistencia" element={<MyIncidentsPage />} />
           <Route path="/asistencia/bandeja" element={<AdminIncidentsPage />} />
