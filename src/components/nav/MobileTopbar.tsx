@@ -108,6 +108,7 @@ export default function MobileTopbar({ onLogout }: Props) {
                 )}
                 <NavLink to="/crops" className="block px-4 py-3 hover:bg-gray-50">Mis Cultivos</NavLink>
                 <NavLink to="/plagas" className="block px-4 py-3 hover:bg-gray-50">Plagas</NavLink>
+                <NavLink to="/agua" className="block px-4 py-3 hover:bg-gray-50">Agua</NavLink>
                 <NavLink to="/mapa" className="block px-4 py-3 hover:bg-gray-50">Mapa</NavLink>
                 <NavLink to="/reportes" className="block px-4 py-3 hover:bg-gray-50">Reportes</NavLink>
                 <NavLink to="/asistencia" className="block px-4 py-3 hover:bg-gray-50">Asistencia técnica</NavLink>
