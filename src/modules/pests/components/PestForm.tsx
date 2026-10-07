@@ -38,6 +38,8 @@ export default function PestForm({ initial, onSubmit, onCancel }: Props) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | undefined>(
     initial?.lat != null && initial?.lng != null ? { lat: initial.lat, lng: initial.lng } : undefined,
   )
+  /** Marca si el agricultor movió el punto él mismo, para no pisárselo. */
+  const [coordsManuales, setCoordsManuales] = useState(false)
   const [treatment, setTreatment] = useState(initial?.treatment ?? '')
   const [notes, setNotes] = useState(initial?.notes ?? '')
   /** Fotografía ya guardada; solo se reemplaza si se elige un archivo nuevo. */
@@ -56,15 +58,34 @@ export default function PestForm({ initial, onSubmit, onCancel }: Props) {
     return () => { vivo = false }
   }, [])
 
-  /** Si el cultivo elegido tiene coordenadas, se heredan al reporte. */
+  /**
+   * Cuando el reporte se asocia a un cultivo propio, la ubicación ya se
+   * conoce: se toma la del terreno. El agricultor solo tiene que señalar el
+   * punto a mano cuando avisa de una plaga que vio fuera de sus cultivos.
+   */
   function elegirCultivo(id: string) {
     setCropId(id)
-    if (!coords && id) {
-      const c = crops.find((x) => x.id === id)
-      if (c?.lat != null && c?.lng != null) setCoords({ lat: c.lat, lng: c.lng })
-      if (!location && c?.location) setLocation(c.location)
+    if (!id) return
+    const c = crops.find((x) => x.id === id)
+    // Se respeta el punto que el agricultor haya movido a mano; si no lo ha
+    // tocado, se hereda el del cultivo, incluso al cambiar de cultivo.
+    if (!coordsManuales && c?.lat != null && c?.lng != null) {
+      setCoords({ lat: c.lat, lng: c.lng })
     }
+    if (!location && c?.location) setLocation(c.location)
   }
+
+  /** El cultivo puede venir ya elegido al editar un reporte existente. */
+  useEffect(() => {
+    if (!cropId || coords || coordsManuales || crops.length === 0) return
+    const c = crops.find((x) => x.id === cropId)
+    if (c?.lat != null && c?.lng != null) setCoords({ lat: c.lat, lng: c.lng })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [crops, cropId])
+
+  const cultivoElegido = crops.find((x) => x.id === cropId)
+  const heredadaDelCultivo =
+    Boolean(cropId) && !coordsManuales && cultivoElegido?.lat != null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -77,6 +98,14 @@ export default function PestForm({ initial, onSubmit, onCancel }: Props) {
     }
     if (!detectedAt) {
       setError('Indica la fecha en que la detectaste.')
+      return
+    }
+    if (!coords) {
+      setError(
+        cropId
+          ? 'El cultivo que elegiste no tiene ubicación en el mapa. Señálala aquí o edita el cultivo para agregársela.'
+          : 'Señala en el mapa dónde viste la plaga. Así los demás agricultores sabrán dónde está el foco.',
+      )
       return
     }
 
@@ -234,10 +263,22 @@ export default function PestForm({ initial, onSubmit, onCancel }: Props) {
 
       <div>
         <label className="text-sm text-gray-600">Ubicación en el mapa</label>
-        <p className="text-xs text-gray-500 mb-2">
-          Sirve para ubicar el foco en el mapa de distribución de plagas.
-        </p>
-        <LocationPicker value={coords} onChange={setCoords} />
+        {heredadaDelCultivo ? (
+          <p className="text-xs text-emerald-700 mb-2">
+            Se tomó la ubicación de tu cultivo{cultivoElegido?.name ? ` «${cultivoElegido.name}»` : ''}.
+            Si viste la plaga en otra parte del terreno, toca el mapa para mover el punto.
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mb-2">
+            {cropId
+              ? 'Señala dónde viste la plaga.'
+              : 'Como no la asociaste a un cultivo tuyo, señala en el mapa dónde la viste.'}
+          </p>
+        )}
+        <LocationPicker
+          value={coords}
+          onChange={(c) => { setCoords(c); setCoordsManuales(true) }}
+        />
       </div>
 
       {error && (
