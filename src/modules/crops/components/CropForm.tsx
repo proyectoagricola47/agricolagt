@@ -95,6 +95,12 @@ export default function CropForm({ initial, onSubmit, onCancel }: Props) {
       alert('El área debe ser mayor a 0')
       return
     }
+    // Sin punto en el mapa el cultivo no aparece en el mapa de la comunidad
+    // ni sirve para ubicar los reportes de plaga que se le asocien.
+    if (!coords) {
+      alert('Señala en el mapa dónde está el terreno. Sin ese punto el cultivo no se verá en el mapa.')
+      return
+    }
     const payload: CropInput = {
       userId: initial?.userId || 'me',
       name: name.trim() || finalSpecies || finalType,
@@ -200,7 +206,8 @@ export default function CropForm({ initial, onSubmit, onCancel }: Props) {
         <div className="md:col-span-2">
           <label className="text-sm text-gray-600">Ubicación en el mapa</label>
           <p className="text-xs text-gray-500 mb-2">
-            Señala dónde está el terreno para verlo en el mapa de cultivos y plagas.
+            Señala dónde está el terreno para verlo en el mapa de la comunidad. Este
+            punto también se usa al reportar una plaga en este cultivo.
           </p>
           <LocationPicker value={coords} onChange={setCoords} />
         </div>
