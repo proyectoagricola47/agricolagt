@@ -9,6 +9,7 @@ import {
 } from '../services/reportService'
 import { ACTIVITY_ICON, ACTIVITY_LABEL } from '../../../model/activity'
 import { AREA_UNIT_LABEL } from '../../crops/types'
+import { getMyProfile } from '../../users/services/userService'
 
 function nombreDeMes(mes: string): string {
   const [anio, m] = mes.split('-')
@@ -26,15 +27,24 @@ export default function ReportsPage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({})
+  const [esAdministrador, setEsAdministrador] = useState(false)
 
   useEffect(() => {
     let vivo = true
-    cargarDatos()
-      .then((d) => { if (vivo) { setDatos(d); setCargando(false) } })
-      .catch((e) => {
+    ;(async () => {
+      try {
+        // El alcance del reporte depende del rol: el administrador ve el
+        // municipio completo y cualquier otra persona, solo lo suyo.
+        const perfil = await getMyProfile().catch(() => null)
+        const admin = perfil?.role === 'admin'
+        if (vivo) setEsAdministrador(admin)
+        const d = await cargarDatos(admin)
+        if (vivo) { setDatos(d); setCargando(false) }
+      } catch (e) {
         console.error(e)
         if (vivo) { setError('No se pudieron cargar los datos del reporte.'); setCargando(false) }
-      })
+      }
+    })()
     return () => { vivo = false }
   }, [])
 
@@ -55,8 +65,9 @@ export default function ReportsPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold">Reportes y estadísticas</h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-          Resumen de lo registrado por la comunidad: rendimiento por temporada, incidencia de
-          plagas y labores realizadas.
+          {esAdministrador
+            ? 'Resumen de lo registrado por toda la comunidad: rendimiento por temporada, incidencia de plagas y labores realizadas.'
+            : 'Resumen de tus cultivos: rendimiento por temporada, incidencia de plagas y labores realizadas. Los costos y los ingresos solo los ves tú.'}
         </p>
       </div>
 
@@ -137,7 +148,9 @@ export default function ReportsPage() {
       <section>
         <h2 className="text-xl font-bold mb-1">Labores realizadas</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Trabajo registrado en las bitácoras de los cultivos de la comunidad.
+          {esAdministrador
+            ? 'Trabajo registrado en las bitácoras de los cultivos de la comunidad.'
+            : 'Trabajo registrado en las bitácoras de tus cultivos.'}
         </p>
 
         {reporte.laboresPorTipo.length === 0 ? (
