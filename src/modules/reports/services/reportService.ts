@@ -70,17 +70,32 @@ export type DatosCrudos = {
 }
 
 /**
- * Carga los datos de toda la comunidad, no solo los del agricultor que
- * consulta. Los reportes son municipales: sirven para ver qué plagas
- * están golpeando la zona y cómo viene la temporada en conjunto.
+ * Carga los datos del reporte.
+ *
+ * El agricultor y el colaborador ven únicamente lo suyo, porque estos
+ * datos incluyen los costos de las labores y los ingresos de las
+ * cosechas, que son información económica de cada familia. Solo el
+ * administrador obtiene la visión del municipio completo, que es la
+ * que sirve para seguir cómo viene la temporada en conjunto.
+ *
+ * El mapa de distribución no cambia: ahí los cultivos y los focos de
+ * plaga siguen siendo de todos, porque su utilidad es justamente que
+ * el vecino los vea a tiempo.
  */
-export async function cargarDatos(): Promise<DatosCrudos> {
-  const [cultivos, cosechas, plagas, labores] = await Promise.all([
-    cropsService.listAll(),
-    harvestService.listAll(),
-    pestService.listAll(),
-    activityService.listAllRecent(2000),
-  ])
+export async function cargarDatos(esAdministrador = false): Promise<DatosCrudos> {
+  const [cultivos, cosechas, plagas, labores] = esAdministrador
+    ? await Promise.all([
+        cropsService.listAll(),
+        harvestService.listAll(),
+        pestService.listAll(),
+        activityService.listAllRecent(2000),
+      ])
+    : await Promise.all([
+        cropsService.list(),
+        harvestService.listMine(),
+        pestService.list(),
+        activityService.listRecent(2000),
+      ])
   return { cultivos, cosechas, plagas, labores }
 }
 
