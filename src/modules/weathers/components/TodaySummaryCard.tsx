@@ -1,4 +1,4 @@
-import { dewPointC, suggestOperationWindows, type WeatherBundle } from '../services/openWeatherService'
+import { dewPointC, finDeBloque, suggestOperationWindows, type WeatherBundle } from '../services/openWeatherService'
 
 type Props = {
   bundle: WeatherBundle
@@ -9,6 +9,22 @@ function fmtHour(iso: string) {
   return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
 }
 
+/**
+ * Añade el día cuando la franja no es de hoy.
+ *
+ * Dos franjas seguidas podían leerse como «18:00» y «15:00» y parecer
+ * desordenadas, cuando la segunda era del día siguiente.
+ */
+function fmtDia(iso: string) {
+  const d = new Date(iso)
+  const hoy = new Date()
+  const manana = new Date(hoy.getTime() + 86400000)
+  const mismoDia = (a: Date, b: Date) => a.toDateString() === b.toDateString()
+  if (mismoDia(d, hoy)) return ''
+  if (mismoDia(d, manana)) return 'mañana '
+  return d.toLocaleDateString('es-ES', { weekday: 'long' }) + ' '
+}
+
 export default function TodaySummaryCard({ bundle }: Props) {
   const today = bundle.daily[0]
   const dp = dewPointC(bundle.current.tempC, bundle.current.humidity)
@@ -17,17 +33,18 @@ export default function TodaySummaryCard({ bundle }: Props) {
 
   const windows = suggestOperationWindows(bundle.hourly)
 
-  // "Radar" textual: bloques horarios donde pop >= 60%
+  // "Radar" textual: bloques donde pop >= 60%. El fin de la franja es
+  // el cierre del último bloque, no su hora de inicio.
   const risky: { start: string; end: string }[] = []
   if (bundle.hourly?.length) {
-    const hourly = bundle.hourly.slice(0, 12) // próximas 12h
+    const hourly = bundle.hourly.slice(0, 12)
     let i = 0
     while (i < hourly.length) {
       if ((hourly[i].pop || 0) < 0.6) { i++; continue }
       const start = i
       while (i < hourly.length && (hourly[i].pop || 0) >= 0.6) i++
       const end = i - 1
-      risky.push({ start: hourly[start].date, end: hourly[end].date })
+      risky.push({ start: hourly[start].date, end: finDeBloque(hourly, end) })
     }
   }
 
@@ -52,7 +69,7 @@ export default function TodaySummaryCard({ bundle }: Props) {
           {windows.length ? (
             <ul className="mt-1 text-sm text-gray-800 space-y-1">
               {windows.slice(0,2).map((w, i) => (
-                <li key={i}>{fmtHour(w.start)}–{fmtHour(w.end)}</li>
+                <li key={i}>{fmtDia(w.start)}{fmtHour(w.start)}–{fmtHour(w.end)}</li>
               ))}
             </ul>
           ) : (
@@ -66,7 +83,10 @@ export default function TodaySummaryCard({ bundle }: Props) {
         {risky.length ? (
           <ul className="text-sm text-gray-700 list-disc ml-5">
             {risky.map((r, i) => (
-              <li key={i}>Lluvias probables entre {fmtHour(r.start)} y {fmtHour(r.end)}</li>
+              <li key={i}>
+                Lluvias probables {fmtDia(r.start) ? fmtDia(r.start) : ''}entre{' '}
+                {fmtHour(r.start)} y {fmtHour(r.end)}
+              </li>
             ))}
           </ul>
         ) : (
