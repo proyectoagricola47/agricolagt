@@ -370,11 +370,38 @@ export function dewPointC(tempC: number, humidityPct: number): number {
   return Math.round(dp * 10) / 10
 }
 
+/**
+ * Separación real entre dos muestras del pronóstico.
+ *
+ * El plan gratuito de OpenWeatherMap no entrega una muestra por hora
+ * sino bloques de tres horas, de modo que la distancia no se puede dar
+ * por supuesta: se mide sobre los propios datos.
+ */
+function pasoDeMuestreoMs(hourly: HourlyForecast[]): number {
+  const UNA_HORA = 3600000
+  if (hourly.length < 2) return UNA_HORA
+  const d = new Date(hourly[1].date).getTime() - new Date(hourly[0].date).getTime()
+  return d > 0 ? d : UNA_HORA
+}
+
+/**
+ * Hora en que termina el bloque que empieza en el índice indicado.
+ *
+ * Sin esto, una franja formada por un solo bloque se mostraba como
+ * «entre 18:00 y 18:00», porque se tomaba su hora de inicio también
+ * como la de fin.
+ */
+export function finDeBloque(hourly: HourlyForecast[], indice: number): string {
+  const paso = pasoDeMuestreoMs(hourly)
+  return new Date(new Date(hourly[indice].date).getTime() + paso).toISOString()
+}
+
 // Ventana sugerida para fertilización/aplicación (baja deriva):
 // criterios: viento < 15 km/h, humedad 50-85%, baja probabilidad de lluvia (<40%) en próximas 6h
 export function suggestOperationWindows(hourly?: HourlyForecast[]): { start: string; end: string }[] {
   if (!hourly?.length) return []
-  const ok = hourly.slice(0, 12).map(h => {
+  const muestras = hourly.slice(0, 12)
+  const ok = muestras.map(h => {
     const windOk = (h.windKmh || 0) < 15
     const humOk = (h.humidity ?? 60) >= 50 && (h.humidity ?? 60) <= 85
     const rainOk = (h.pop || 0) < 0.4
@@ -387,7 +414,7 @@ export function suggestOperationWindows(hourly?: HourlyForecast[]): { start: str
     const start = i
     while (i < ok.length && ok[i]) i++
     const end = i - 1
-    res.push({ start: hourly[start].date, end: hourly[end].date })
+    res.push({ start: muestras[start].date, end: finDeBloque(muestras, end) })
   }
   return res
 }
