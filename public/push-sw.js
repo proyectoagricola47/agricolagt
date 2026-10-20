@@ -18,7 +18,7 @@ self.addEventListener('push', function (evento) {
   const opciones = {
     body: datos.body || '',
     icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    badge: '/icons/icon-badge.png',
     tag: datos.tag || titulo,
     renotify: true,
     data: { url: datos.url || '/notificaciones' },
