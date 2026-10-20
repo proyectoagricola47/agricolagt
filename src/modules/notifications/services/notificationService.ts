@@ -79,7 +79,7 @@ async function mostrarEnNavegador(titulo: string, cuerpo: string): Promise<void>
   const opciones: NotificationOptions = {
     body: cuerpo,
     icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    badge: '/icons/icon-badge.png',
     tag: titulo,
   }
 
