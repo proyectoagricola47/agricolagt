@@ -4,6 +4,8 @@ import sharp from 'sharp'
 
 const root = path.resolve(process.cwd())
 const srcSvg = path.join(root, 'public', 'favicon.svg')
+// Silueta monocroma para el distintivo de las notificaciones de Android.
+const srcBadge = path.join(root, 'public', 'favicon-badge.svg')
 const outDir = path.join(root, 'public', 'icons')
 
 async function ensureDir(dir) {
@@ -26,6 +28,17 @@ async function generate() {
     await writeFile(outPath, buf)
     console.log('Generated', outPath)
   }
+
+  // El distintivo se genera aparte porque parte de otro archivo de origen y
+  // se entrega a 96 px, que es el tamano que pide Android para el badge.
+  const badgeSvg = await readFile(srcBadge)
+  const badgePath = path.join(outDir, 'icon-badge.png')
+  const badgeBuf = await sharp(badgeSvg, { density: 384 })
+    .resize(96, 96)
+    .png({ compressionLevel: 9 })
+    .toBuffer()
+  await writeFile(badgePath, badgeBuf)
+  console.log('Generated', badgePath)
 }
 
 generate().catch((e) => {
