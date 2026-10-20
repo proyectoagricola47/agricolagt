@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mazorca monocromática para el distintivo (badge) de las notificaciones.
+
+  Android no dibuja este archivo a color: toma únicamente el canal alfa y lo
+  rellena con un tono plano del sistema. Por eso no hay fondo ni color, solo
+  la silueta en blanco sobre transparencia.
+
+  Antes se usaba icon-192.png como badge. Ese archivo es un cuadrado verde
+  opaco, de modo que su canal alfa es el cuadrado completo y en la barra de
+  estado aparecía un cuadro gris relleno.
+
+  Decisiones de dibujo, todas por el tamaño al que se ve (unos 24 dp):
+  - Los granos van escalonados, con las filas corridas media columna. En
+    cuadrícula se convierten en una red y dejan de leerse como maíz.
+  - Son cuatro filas de granos grandes. Con más filas se empastan.
+  - El olote lleva un contorno negro dentro de la máscara: eso cala un hilo
+    transparente que lo separa de la tusa, que si no se funden en una mancha.
+  - El transform solo centra el dibujo y lo amplía hasta dejar 10 % de margen.
+
+  El icono a color de la aplicación NO es este: sigue siendo favicon.svg, la
+  hoja sobre el cuadrado verde. Esta mazorca vive solo en la barra de estado.
+-->
+<svg width="96" height="96" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="soloOlote"><path d="M32 8 C37.5 8 42.5 16 42.5 30 C42.5 45 37.5 56 32 56 C26.5 56 21.5 45 21.5 30 C21.5 16 26.5 8 32 8 Z"></path></clipPath></defs>
+  <mask id="maiz" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><g transform="translate(3.463 2.383) scale(1.0318) rotate(-20 32 32)">
+      <path d="M36 50 C45 42 52 26 51 9 C42 18 36 33 36 50 Z" fill="#FFFFFF"></path>
+      <path d="M28 52 C19 46 12 32 13 16 C22 24 27 37 28 52 Z" fill="#FFFFFF"></path>
+      <path d="M32 8 C37.5 8 42.5 16 42.5 30 C42.5 45 37.5 56 32 56 C26.5 56 21.5 45 21.5 30 C21.5 16 26.5 8 32 8 Z" fill="#FFFFFF" stroke="#000000" stroke-width="2.6"></path>
+      <g clip-path="url(#soloOlote)" fill="#000000"><ellipse cx="19.7" cy="16" rx="3.4" ry="3"></ellipse><ellipse cx="27.9" cy="16" rx="3.4" ry="3"></ellipse><ellipse cx="36.1" cy="16" rx="3.4" ry="3"></ellipse><ellipse cx="44.3" cy="16" rx="3.4" ry="3"></ellipse><ellipse cx="23.8" cy="25.5" rx="3.4" ry="3"></ellipse><ellipse cx="32" cy="25.5" rx="3.4" ry="3"></ellipse><ellipse cx="40.2" cy="25.5" rx="3.4" ry="3"></ellipse><ellipse cx="19.7" cy="35" rx="3.4" ry="3"></ellipse><ellipse cx="27.9" cy="35" rx="3.4" ry="3"></ellipse><ellipse cx="36.1" cy="35" rx="3.4" ry="3"></ellipse><ellipse cx="44.3" cy="35" rx="3.4" ry="3"></ellipse><ellipse cx="23.8" cy="44.5" rx="3.4" ry="3"></ellipse><ellipse cx="32" cy="44.5" rx="3.4" ry="3"></ellipse><ellipse cx="40.2" cy="44.5" rx="3.4" ry="3"></ellipse></g>
+    </g></mask>
+  <rect width="64" height="64" fill="#FFFFFF" mask="url(#maiz)"></rect>
+</svg>
