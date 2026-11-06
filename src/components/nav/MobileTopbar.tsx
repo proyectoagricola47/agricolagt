@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { E } from './etiquetas'
 import { getMyProfile } from '../../modules/users/services/userService'
 import { contarNoLeidas } from '../../modules/notifications/services/notificationService'
 
@@ -68,11 +69,11 @@ export default function MobileTopbar({ onLogout }: Props) {
           <div className="flex items-center gap-2">
             <Link
               to="/notificaciones"
-              title="Notificaciones"
+              title={E.notificaciones}
               className="relative w-9 h-9 rounded-full bg-white shadow border grid place-items-center"
             >
               <span aria-hidden className="text-lg leading-none">🔔</span>
-              <span className="sr-only">Notificaciones</span>
+              <span className="sr-only">{E.notificaciones}</span>
               {noLeidas > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[11px] leading-[18px] text-center font-semibold">
                   {noLeidas > 9 ? '9+' : noLeidas}
@@ -94,28 +95,29 @@ export default function MobileTopbar({ onLogout }: Props) {
         {/* Panel */}
         <nav className="fixed top-14 inset-x-0 z-50 px-3">
           <div className="rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
-            <NavLink to="/" className="block px-4 py-3 hover:bg-gray-50">Inicio</NavLink>
-            <NavLink to="/weather" className="block px-4 py-3 hover:bg-gray-50">Clima</NavLink>
-            <NavLink to="/feed" className="block px-4 py-3 hover:bg-gray-50">Publicaciones</NavLink>
-            <NavLink to="/articles" className="block px-4 py-3 hover:bg-gray-50">Artículos</NavLink>
-            <NavLink to="/mercado" className="block px-4 py-3 hover:bg-gray-50">Mercado</NavLink>
+            <NavLink to="/" className="block px-4 py-3 hover:bg-gray-50">{E.inicio}</NavLink>
+            <NavLink to="/weather" className="block px-4 py-3 hover:bg-gray-50">{E.clima}</NavLink>
+            <NavLink to="/consejos" className="block px-4 py-3 hover:bg-gray-50">{E.consejos}</NavLink>
+            <NavLink to="/feed" className="block px-4 py-3 hover:bg-gray-50">{E.publicaciones}</NavLink>
+            <NavLink to="/articles" className="block px-4 py-3 hover:bg-gray-50">{E.articulos}</NavLink>
+            <NavLink to="/mercado" className="block px-4 py-3 hover:bg-gray-50">{E.mercado}</NavLink>
             {user ? (
               <>
-                <NavLink to="/profile" className="block px-4 py-3 hover:bg-gray-50">Mi Perfil</NavLink>
-                <NavLink to="/notificaciones" className="block px-4 py-3 hover:bg-gray-50">Notificaciones</NavLink>
+                <NavLink to="/profile" className="block px-4 py-3 hover:bg-gray-50">{E.perfil}</NavLink>
+                <NavLink to="/notificaciones" className="block px-4 py-3 hover:bg-gray-50">{E.notificaciones}</NavLink>
                 {isAdmin && (
-                  <NavLink to="/admin/users" className="block px-4 py-3 hover:bg-gray-50">Admin</NavLink>
+                  <NavLink to="/admin/users" className="block px-4 py-3 hover:bg-gray-50">{E.admin}</NavLink>
                 )}
-                <NavLink to="/crops" className="block px-4 py-3 hover:bg-gray-50">Mis Cultivos</NavLink>
-                <NavLink to="/plagas" className="block px-4 py-3 hover:bg-gray-50">Plagas</NavLink>
-                <NavLink to="/agua" className="block px-4 py-3 hover:bg-gray-50">Agua</NavLink>
-                <NavLink to="/mapa" className="block px-4 py-3 hover:bg-gray-50">Mapa</NavLink>
-                <NavLink to="/reportes" className="block px-4 py-3 hover:bg-gray-50">Reportes</NavLink>
-                <NavLink to="/asistencia" className="block px-4 py-3 hover:bg-gray-50">Asistencia técnica</NavLink>
+                <NavLink to="/crops" className="block px-4 py-3 hover:bg-gray-50">{E.cultivos}</NavLink>
+                <NavLink to="/plagas" className="block px-4 py-3 hover:bg-gray-50">{E.plagas}</NavLink>
+                <NavLink to="/agua" className="block px-4 py-3 hover:bg-gray-50">{E.agua}</NavLink>
+                <NavLink to="/mapa" className="block px-4 py-3 hover:bg-gray-50">{E.mapa}</NavLink>
+                <NavLink to="/reportes" className="block px-4 py-3 hover:bg-gray-50">{E.reportes}</NavLink>
+                <NavLink to="/asistencia" className="block px-4 py-3 hover:bg-gray-50">{E.asistencia}</NavLink>
                 {canWriteArticles && (
-                  <NavLink to="/asistencia/bandeja" className="block px-4 py-3 hover:bg-gray-50">Bandeja de incidencias</NavLink>
+                  <NavLink to="/asistencia/bandeja" className="block px-4 py-3 hover:bg-gray-50">{E.bandeja}</NavLink>
                 )}
-                <NavLink to="/posts" className="block px-4 py-3 hover:bg-gray-50">Mis Publicaciones</NavLink>
+                <NavLink to="/posts" className="block px-4 py-3 hover:bg-gray-50">{E.misPublicaciones}</NavLink>
                 {canWriteArticles && (
                   <NavLink to="/articles/new" className="block px-4 py-3 hover:bg-gray-50">Nuevo artículo</NavLink>
                 )}
