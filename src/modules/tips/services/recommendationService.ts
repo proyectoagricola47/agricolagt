@@ -107,3 +107,31 @@ export async function consejosParaHoy(
 
   return [...prioritarios, ...porClima, ...generales].slice(0, maximo)
 }
+
+/** Nombre legible de cada condición con la que se clasifican los consejos. */
+export const ETIQUETA_CONDICION: Record<string, string> = {
+  lluvia_intensa: 'Lluvias intensas',
+  ola_calor: 'Ola de calor',
+  uv_alto: 'Índice UV alto',
+  viento: 'Viento',
+  humedad_baja: 'Humedad baja',
+  sequia: 'Sequía',
+  general: 'General',
+}
+
+/**
+ * Todos los consejos del catálogo, para la página de consulta.
+ *
+ * A diferencia de consejosParaHoy, no filtra por el clima ni por los cultivos
+ * del agricultor: la biblioteca se consulta completa y el filtrado lo hace la
+ * pantalla.
+ */
+export async function listarConsejos(): Promise<Tip[]> {
+  const { data, error } = await supabase
+    .from('tips')
+    .select('id, crop_type, condition, title, body, source')
+    .order('condition', { ascending: true })
+    .order('title', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map(mapRow)
+}
