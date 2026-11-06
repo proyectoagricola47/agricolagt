@@ -5,6 +5,7 @@ import FeedPage from '../modules/posts/pages/feedPage'
 import NewPostPage from '../modules/posts/pages/newPost'
 import MyPostsPage from '../modules/posts/pages/myPost'
 import PostDetail from '../modules/posts/pages/postDetail'
+import TipsPage from '../modules/tips/pages/consejos'
 import WeatherPage from '../modules/weathers/pages/weatherPage'
 import ArticlesListPage from '../modules/articles/pages/ArticlesListPage'
 import ArticleDetailPage from '../modules/articles/pages/ArticleDetailPage'
@@ -60,6 +61,7 @@ export default function AppRouter() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<ArticlesListPage />} />
           <Route path="/weather" element={<WeatherPage />} />
+          <Route path="/consejos" element={<TipsPage />} />
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/posts/:id" element={<PostDetail />} />
           <Route path="/articles" element={<ArticlesListPage />} />
