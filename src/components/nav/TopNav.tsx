@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { E } from './etiquetas'
 import { getMyProfile } from '../../modules/users/services/userService'
 import { contarNoLeidas } from '../../modules/notifications/services/notificationService'
 
@@ -59,27 +60,28 @@ export default function TopNav({ onLogout }: Props) {
 
         {/* Nav links */}
         <nav className="flex items-center gap-1">
-          <NavLink to="/" end className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Inicio</NavLink>
-          <NavLink to="/weather" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Clima</NavLink>
-          <NavLink to="/feed" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Publicaciones</NavLink>
-          <NavLink to="/articles" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Artículos</NavLink>
-          <NavLink to="/mercado" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mercado</NavLink>
+          <NavLink to="/" end className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.inicio}</NavLink>
+          <NavLink to="/weather" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.clima}</NavLink>
+          <NavLink to="/consejos" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.consejos}</NavLink>
+          <NavLink to="/feed" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.publicaciones}</NavLink>
+          <NavLink to="/articles" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.articulos}</NavLink>
+          <NavLink to="/mercado" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.mercado}</NavLink>
           {user && (
             <>
-              <NavLink to="/profile" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mi Perfil</NavLink>
+              <NavLink to="/profile" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.perfil}</NavLink>
               {isAdmin && (
-                <NavLink to="/admin/users" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Admin</NavLink>
+                <NavLink to="/admin/users" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.admin}</NavLink>
               )}
-              <NavLink to="/crops" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Cultivos</NavLink>
-              <NavLink to="/plagas" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Plagas</NavLink>
-              <NavLink to="/agua" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Agua</NavLink>
-              <NavLink to="/mapa" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mapa</NavLink>
-              <NavLink to="/reportes" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Reportes</NavLink>
-              <NavLink to="/asistencia" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Asistencia</NavLink>
+              <NavLink to="/crops" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.cultivos}</NavLink>
+              <NavLink to="/plagas" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.plagas}</NavLink>
+              <NavLink to="/agua" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.agua}</NavLink>
+              <NavLink to="/mapa" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.mapa}</NavLink>
+              <NavLink to="/reportes" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.reportes}</NavLink>
+              <NavLink to="/asistencia" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.asistencia}</NavLink>
               {canWriteArticles && (
-                <NavLink to="/asistencia/bandeja" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Bandeja</NavLink>
+                <NavLink to="/asistencia/bandeja" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.bandeja}</NavLink>
               )}
-              <NavLink to="/posts" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>Mis Publicaciones</NavLink>
+              <NavLink to="/posts" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>{E.misPublicaciones}</NavLink>
             </>
           )}
           
@@ -90,11 +92,11 @@ export default function TopNav({ onLogout }: Props) {
           {user && (
             <NavLink
               to="/notificaciones"
-              title="Notificaciones"
+              title={E.notificaciones}
               className={({ isActive }) => `relative px-2 py-2 rounded-lg hover:bg-gray-100 ${isActive ? 'bg-gray-100' : ''}`}
             >
               <span aria-hidden className="text-lg leading-none">🔔</span>
-              <span className="sr-only">Notificaciones</span>
+              <span className="sr-only">{E.notificaciones}</span>
               {noLeidas > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[11px] leading-[18px] text-center font-semibold">
                   {noLeidas > 9 ? '9+' : noLeidas}
